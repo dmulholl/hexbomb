@@ -11,7 +11,7 @@ Usage: hexbomb [FLAGS] [OPTIONS] [ARGUMENTS]
   A hex dump utility with style.
 
   The --offset option specifies the byte offset at which to begin reading.
-  You can supply a positive or negative integer value for this option. A
+  You can specify a positive or negative integer value for this option. A
   positive offset seeks forwards from the beginning of the file, a negative
   offset seeks backwards from the end of the file.
 
@@ -116,6 +116,32 @@ fn main() {
     dump_file(file, read_all, num_to_read, num_per_line, display_offset);
 }
 
+
+// Convert string arguments to integers.
+fn args_to_ints(parser: &ArgParser) -> (usize, usize, i64) {
+    let num_per_line = match parser.value("line").parse::<usize>() {
+        Ok(int_val) => int_val,
+        Err(_) => {
+            eprintln!("Error: cannot parse '{}' as a positive integer.", parser.value("line"));
+            std::process::exit(1);
+        }
+    };
+    let num_to_read = match parser.value("number").parse::<usize>() {
+        Ok(int_val) => int_val,
+        Err(_) => {
+            eprintln!("Error: cannot parse '{}' as a positive integer.", parser.value("number"));
+            std::process::exit(1);
+        }
+    };
+    let offset = match parser.value("offset").parse::<i64>() {
+        Ok(int_val) => int_val,
+        Err(_) => {
+            eprintln!("Error: cannot parse '{}' as an integer.", parser.value("offset"));
+            std::process::exit(1);
+        }
+    };
+    return (num_per_line, num_to_read, offset);
+}
 
 
 fn dump_file<T: io::Read>(
@@ -277,31 +303,5 @@ fn line(bytes: &[u8], num_bytes: usize, offset: usize, num_per_line: usize) -> S
 
     line.push_str(&" │".bright_black().to_string());
     return line;
-}
-
-
-fn args_to_ints(parser: &ArgParser) -> (usize, usize, i64) {
-    let num_per_line = match parser.value("line").parse::<usize>() {
-        Ok(int_val) => int_val,
-        Err(_) => {
-            eprintln!("Error: cannot parse '{}' as a positive integer.", parser.value("line"));
-            std::process::exit(1);
-        }
-    };
-    let num_to_read = match parser.value("number").parse::<usize>() {
-        Ok(int_val) => int_val,
-        Err(_) => {
-            eprintln!("Error: cannot parse '{}' as a positive integer.", parser.value("number"));
-            std::process::exit(1);
-        }
-    };
-    let offset = match parser.value("offset").parse::<i64>() {
-        Ok(int_val) => int_val,
-        Err(_) => {
-            eprintln!("Error: cannot parse '{}' as an integer.", parser.value("offset"));
-            std::process::exit(1);
-        }
-    };
-    return (num_per_line, num_to_read, offset);
 }
 
