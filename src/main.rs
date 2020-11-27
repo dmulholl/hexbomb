@@ -1,9 +1,8 @@
-extern crate arguably;
-
-
 use arguably::ArgParser;
+use std::fmt::Write;
 use std::io::Seek;
 use std::io;
+use colored::*;
 
 
 const HELP: &str = "
@@ -135,7 +134,7 @@ fn dump_file<T: io::Read>(
     // Buffer for storing file input.
     let mut buffer: Vec<u8> = vec![0; num_per_line];
 
-    print_top_line(num_per_line);
+    println!("{}", top_line(num_per_line));
 
     loop {
         // Determine the maximum number of bytes to read this iteration.
@@ -151,7 +150,7 @@ fn dump_file<T: io::Read>(
         match file.read(&mut buffer[0..max_bytes]) {
             Ok(num_bytes) => {
                 if num_bytes > 0 {
-                    print_line(&buffer, num_bytes, display_offset + bytes_read, num_per_line);
+                    println!("{}", line(&buffer, num_bytes, display_offset + bytes_read, num_per_line));
                     bytes_read += num_bytes;
                     bytes_remaining -= num_bytes;
                 } else {
@@ -166,119 +165,118 @@ fn dump_file<T: io::Read>(
     }
 
     if bytes_read == 0 {
-        print_empty_line(display_offset, num_per_line);
+        println!("{}", empty_line(display_offset, num_per_line));
     }
 
-    print_bottom_line(num_per_line);
+    println!("{}", bottom_line(num_per_line));
 }
 
 
-fn print_top_line(num_per_line: usize) {
-    print!("┌──────────┬");
+fn top_line(num_per_line: usize) -> String {
+    let mut line = String::from("┌──────────┬");
 
     for i in 0..num_per_line {
         if i > 0 && i % 8 == 0 {
-            print!("──");
+            line.push_str("──");
         }
-        print!("───");
+        line.push_str("───");
     }
 
-    print!("─┬─");
+    line.push_str("─┬─");
 
     for i in 0..num_per_line {
         if i > 0 && i % 8 == 0 {
-            print!("─");
+            line.push_str("─");
         }
-        print!("─");
+        line.push_str("─");
     }
 
-    println!("─┐");
+    line.push_str("─┐");
+    return line.bright_black().to_string();
 }
 
 
-fn print_bottom_line(num_per_line: usize) {
-    print!("└──────────┴");
+fn bottom_line(num_per_line: usize) -> String {
+   let mut line = String::from("└──────────┴");
 
     for i in 0..num_per_line {
         if i > 0 && i % 8 == 0 {
-            print!("──");
+            line.push_str("──");
         }
-        print!("───");
+        line.push_str("───");
     }
 
-    print!("─┴─");
+    line.push_str("─┴─");
 
     for i in 0..num_per_line {
         if i > 0 && i % 8 == 0 {
-            print!("─");
+            line.push_str("─");
         }
-        print!("─");
+        line.push_str("─");
     }
 
-    println!("─┘");
+    line.push_str("─┘");
+    return line.bright_black().to_string();
 }
 
 
-fn print_empty_line(offset: usize, num_per_line: usize) {
-    print!("│ {:width$X} │", offset, width = 8);
+fn empty_line(offset: usize, num_per_line: usize) -> String{
+    let mut line = format!("│ {:width$X} │", offset, width = 8);
 
     for i in 0..num_per_line {
         if i > 0 && i % 8 == 0 {
-            print!("  ");
+            line.push_str("  ");
         }
-        print!("   ");
+        line.push_str("   ");
     }
 
-    print!(" │ ");
+    line.push_str(" │ ");
 
     for i in 0..num_per_line {
         if i > 0 && i % 8 == 0 {
-            print!(" ");
+            line.push_str(" ");
         }
-        print!(" ");
+        line.push_str(" ");
     }
 
-    println!(" │");
-
+    line.push_str(" │");
+    return line.bright_black().to_string();
 }
 
 
-fn print_line(bytes: &[u8], num_bytes: usize, offset: usize, num_per_line: usize) {
-
-    // Write the line number.
-    print!("│ {:width$X} │", offset, width = 8);
+fn line(bytes: &[u8], num_bytes: usize, offset: usize, num_per_line: usize) -> String {
+    let mut line = format!("{1}{0:9X} {1}", offset, "│".bright_black());
 
     for i in 0..num_per_line {
         if i > 0 && i % 8 == 0 {
-            print!(" ┆");
+            line.push_str(&" ┆".bright_black().to_string());
         }
         if i < num_bytes {
-            print!(" {:02X}", bytes[i]);
+            write!(line, " {:02X}", bytes[i]).unwrap();
         } else {
-            print!("   ");
+            line.push_str("   ");
         }
     }
 
-    print!(" │ ");
+    line.push_str(&" │ ".bright_black().to_string());
 
-    // Write a character for each byte in the printable ascii range.
     for i in 0..num_per_line {
         if i > 0 && i % 8 == 0 {
-            print!("┆");
+            line.push_str(&"┆".bright_black().to_string());
         }
         if i < num_bytes {
             if bytes[i] > 31 && bytes[i] < 127 {
-                print!("{}", bytes[i] as char);
+                line.push(bytes[i] as char);
             } else {
-                print!("·");
+                line.push_str(&"·".bright_black().to_string());
             }
         } else {
-            print!(" ");
+            line.push_str(" ");
         }
     }
 
-    println!(" │");
-
+    line.push_str(&" │".bright_black().to_string());
+    return line;
 }
 
 

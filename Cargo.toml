@@ -12,4 +12,5 @@ repository = "https://github.com/dmulholl/hexbomb"
 
 [dependencies]
 arguably = "2.0.0-alpha"
+colored = "2.0.0"
 
