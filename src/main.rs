@@ -124,10 +124,13 @@ fn dump_file<T: io::Read>(
     read_all: bool,
     num_to_read: usize,
     num_per_line: usize,
-    mut display_offset: usize
+    display_offset: usize
 ) {
     // Number of bytes remaining to be read, if we're reading a fixed number.
     let mut bytes_remaining = if read_all { usize::MAX } else { num_to_read };
+
+    // Total number of bytes read from the file.
+    let mut bytes_read: usize = 0;
 
     // Buffer for storing file input.
     let mut buffer: Vec<u8> = vec![0; num_per_line];
@@ -148,8 +151,8 @@ fn dump_file<T: io::Read>(
         match file.read(&mut buffer[0..max_bytes]) {
             Ok(num_bytes) => {
                 if num_bytes > 0 {
-                    print_line(&buffer, num_bytes, display_offset, num_per_line);
-                    display_offset += num_bytes;
+                    print_line(&buffer, num_bytes, display_offset + bytes_read, num_per_line);
+                    bytes_read += num_bytes;
                     bytes_remaining -= num_bytes;
                 } else {
                     break;
@@ -160,6 +163,10 @@ fn dump_file<T: io::Read>(
                 std::process::exit(1);
             }
         }
+    }
+
+    if bytes_read == 0 {
+        print_empty_line(display_offset, num_per_line);
     }
 
     print_bottom_line(num_per_line);
@@ -211,10 +218,34 @@ fn print_bottom_line(num_per_line: usize) {
     println!("─┘");
 }
 
+
+fn print_empty_line(offset: usize, num_per_line: usize) {
+    print!("│ {:width$X} │", offset, width = 8);
+
+    for i in 0..num_per_line {
+        if i > 0 && i % 8 == 0 {
+            print!("  ");
+        }
+        print!("   ");
+    }
+
+    print!(" │ ");
+
+    for i in 0..num_per_line {
+        if i > 0 && i % 8 == 0 {
+            print!(" ");
+        }
+        print!(" ");
+    }
+
+    println!(" │");
+
+}
+
+
 fn print_line(bytes: &[u8], num_bytes: usize, offset: usize, num_per_line: usize) {
 
     // Write the line number.
-    // print!("│ {:8X} │", offset);
     print!("│ {:width$X} │", offset, width = 8);
 
     for i in 0..num_per_line {
