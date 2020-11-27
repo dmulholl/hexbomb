@@ -10,6 +10,10 @@ Usage: hexbomb [FLAGS] [OPTIONS] [ARGUMENTS]
 
   Hex dump with style.
 
+  A positive offset seeks forwards from the beginning of the file, a negative
+  offset seeks backwards from the end of the file, i.e. an offset of -256 will
+  display the final 256 bytes of the file.
+
 Arguments:
   [file]                    File to read. Defaults to reading from stdin.
 
@@ -32,7 +36,7 @@ fn main() {
         .option("number n")
         .option("offset o");
 
-    // Parse the command line arguments.
+    // Parse the command line arguments and convert string arguments to integers.
     if let Err(err) = parser.parse() {
         err.exit();
     }
@@ -41,32 +45,61 @@ fn main() {
 
     // Default to reading from stdin if no filename has been specified.
     if parser.args.len() == 0 {
-        if offset > 0 {
-            eprintln!("Error: cannot seek into stdin.");
+        if offset != 0 {
+            eprintln!("Error: STDIN does not support seeking to an offset.");
             std::process::exit(1);
         }
         let file = std::io::stdin();
         dump_file(file, read_all, num_to_read, num_per_line, 0);
-    } else {
-        let filepath = std::path::Path::new(&parser.args[0]);
-        let mut file = match std::fs::File::open(&filepath) {
-            Ok(file) => file,
+        return;
+    }
+
+    // We only reach this point if a filename has been specified.
+    let filepath = std::path::Path::new(&parser.args[0]);
+    let mut file = match std::fs::File::open(&filepath) {
+        Ok(file) => file,
+        Err(_) => {
+            eprintln!("Error: cannot open the specified file.");
+            std::process::exit(1);
+        }
+    };
+
+    // The display offset determines the first line number in the output.
+    let mut display_offset: usize = 0;
+
+    // A positive offset seeks forward from the beginning of the file.
+    if offset > 0 {
+        match file.seek(std::io::SeekFrom::Start(offset as u64)) {
+            Ok(_) => (),
             Err(_) => {
-                eprintln!("Error: cannot open the specified file.");
+                eprintln!("Error: cannot seek to the specified offset.");
                 std::process::exit(1);
             }
         };
-        if offset > 0 {
-            match file.seek(std::io::SeekFrom::Start(offset as u64)) {
-                Ok(_) => (),
-                Err(_) => {
-                    eprintln!("Error: cannot seek to the specified offset.");
-                    std::process::exit(1);
-                }
-            };
-        }
-        dump_file(file, read_all, num_to_read, num_per_line, offset);
+        display_offset = offset as usize;
     }
+
+    // A negative offset seeks backwards from the end of the file.
+    if offset < 0 {
+        match file.seek(std::io::SeekFrom::End(0)) {
+            Ok(file_size) => {
+                display_offset = (file_size as i64 + offset) as usize;
+            },
+            Err(err) => {
+                eprintln!("Error: {}", err);
+                std::process::exit(1);
+            }
+        };
+        match file.seek(std::io::SeekFrom::End(offset)) {
+            Ok(_) => (),
+            Err(_) => {
+                eprintln!("Error: cannot seek to the specified offset.");
+                std::process::exit(1);
+            }
+        };
+    }
+
+    dump_file(file, read_all, num_to_read, num_per_line, display_offset);
 }
 
 
@@ -76,13 +109,13 @@ fn dump_file<T: std::io::Read>(
     read_all: bool,
     num_to_read: usize,
     num_per_line: usize,
-    initial_offset: usize
+    display_offset: usize
 ) {
     // Number of bytes remaining to be read, if we're reading a fixed number.
     let mut remaining = if read_all { usize::MAX } else { num_to_read };
 
     // We need to keep track of the offset for printing line numbers.
-    let mut offset = initial_offset;
+    let mut offset = display_offset;
 
     // Buffer for storing file input.
     let mut buffer: Vec<u8> = vec![0; num_per_line];
@@ -207,7 +240,7 @@ fn print_line(bytes: &[u8], num_bytes: usize, offset: usize, num_per_line: usize
 
 
 
-fn args_to_ints(parser: &ArgParser) -> (usize, usize, usize) {
+fn args_to_ints(parser: &ArgParser) -> (usize, usize, i64) {
     let num_per_line = match parser.value("line") {
         Some(str_val) => {
             match str_val.parse::<usize>() {
@@ -234,10 +267,10 @@ fn args_to_ints(parser: &ArgParser) -> (usize, usize, usize) {
     };
     let offset = match parser.value("offset") {
         Some(str_val) => {
-            match str_val.parse::<usize>() {
+            match str_val.parse::<i64>() {
                 Ok(int_val) => int_val,
                 Err(_) => {
-                    eprintln!("Error: cannot parse '{}' as a positive integer.", str_val);
+                    eprintln!("Error: cannot parse '{}' as an integer.", str_val);
                     std::process::exit(1);
                 }
             }
