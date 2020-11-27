@@ -11,3 +11,5 @@ repository = "https://github.com/dmulholl/hexbomb"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+arguably = "1.0.0"
+
