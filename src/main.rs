@@ -11,25 +11,22 @@ Usage: hexbomb [FLAGS] [OPTIONS] [ARGUMENTS]
   A hex dump utility with style.
 
   The --offset option specifies the byte offset at which to begin reading.
-  You can specify a positive or negative integer value for this option. A
-  positive offset seeks forwards from the beginning of the file, a negative
-  offset seeks backwards from the end of the file.
+  You can specify a positive or negative integer value. A positive offset
+  seeks forward from the beginning of the file, a negative offset seeks
+  backward from the end of the file.
 
-  For example, the following command will skip the first 128 bytes of the
-  file:
+  For example, the following command will skip the first 128 bytes:
 
     $ hexbomb <filename> --offset 128
 
-  And the following command will display only the final 128 bytes of the
-  file:
+  And the following command will display only the final 128 bytes:
 
     $ hexbomb <filename> --offset -128
 
-  Note that the --offset option cannot be used when piping or redirecting to
-  stdin.
+  Note that the --offset option cannot be used when reading from STDIN.
 
 Arguments:
-  [file]                    File to read. Defaults to reading from stdin.
+  [file]                    File to read. Defaults to reading from STDIN.
 
 Options:
   -l, --line <int>          Bytes per line in output (default: 16).
