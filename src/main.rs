@@ -8,18 +8,32 @@ use std::io::Seek;
 const HELP: &str = "
 Usage: hexbomb [FLAGS] [OPTIONS] [ARGUMENTS]
 
-  Hex dump with style.
+  A hex dump utility with style.
 
-  A positive offset seeks forwards from the beginning of the file, a negative
-  offset seeks backwards from the end of the file, i.e. an offset of -256 will
-  display the final 256 bytes of the file.
+  The --offset option specifies the byte offset at which to begin reading.
+  You can supply a positive or negative integer value for this option. A
+  positive offset seeks forwards from the beginning of the file, a negative
+  offset seeks backwards from the end of the file.
+
+  For example, the following command will skip the first 128 bytes of the
+  file:
+
+    $ hexbomb <filename> --offset 128
+
+  And the following command will display only the final 128 bytes of the
+  file:
+
+    $ hexbomb <filename> --offset -128
+
+  Note that the --offset option cannot be used when piping or redirecting to
+  stdin.
 
 Arguments:
   [file]                    File to read. Defaults to reading from stdin.
 
 Options:
   -l, --line <int>          Bytes per line in output (default: 16).
-  -n, --number <int>        Number of bytes to read.
+  -n, --number <int>        Number of bytes to read (default: all).
   -o, --offset <int>        Byte offset at which to begin reading.
 
 Flags:
