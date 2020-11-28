@@ -19,7 +19,7 @@ Usage: hexbomb [FLAGS] [OPTIONS] [ARGUMENTS]
 
     $ hexbomb <filename> --offset 128
 
-  And the following command will display only the final 128 bytes:
+  Whereas the following command will display only the final 128 bytes:
 
     $ hexbomb <filename> --offset -128
 
@@ -47,7 +47,7 @@ fn main() {
         .option("number n", "0")
         .option("offset o", "0");
 
-    // Parse the command line arguments and convert string arguments to integers.
+    // Parse the command line arguments.
     if let Err(err) = parser.parse() {
         err.exit();
     }
@@ -267,8 +267,22 @@ fn empty_line(offset: usize, num_per_line: usize) -> String{
 }
 
 
+fn line_number(offset: usize) -> String {
+    let number = format!("{:X}", offset);
+    if number.len() > 8 {
+        return number;
+    }
+
+    let mut padding = String::from(" ");
+    for _ in 0..(8 - number.len()) {
+        padding.push_str("·");
+    }
+    return format!("{}{}", padding.bright_black().to_string(), number);
+}
+
+
 fn line(bytes: &[u8], num_bytes: usize, offset: usize, num_per_line: usize) -> String {
-    let mut line = format!("{1}{0:9X} {1}", offset, "│".bright_black());
+    let mut line = format!("{1}{0} {1}", line_number(offset), "│".bright_black());
 
     for i in 0..num_per_line {
         if i > 0 && i % 8 == 0 {
