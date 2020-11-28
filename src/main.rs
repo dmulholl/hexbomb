@@ -8,7 +8,7 @@ use colored::*;
 const HELP: &str = "
 Usage: hexbomb [FLAGS] [OPTIONS] [ARGUMENTS]
 
-  A hex dump utility with style.
+  A hexdump utility with style.
 
   The --offset option specifies the byte offset at which to begin reading.
   You can specify a positive or negative integer value. A positive offset
