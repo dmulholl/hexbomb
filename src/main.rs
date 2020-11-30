@@ -6,7 +6,7 @@ use colored::*;
 
 
 const HELP: &str = "
-Usage: hexbomb [FLAGS] [OPTIONS] [ARGUMENTS]
+Usage: hexbomb [file]
 
   A hexdump utility with style.
 

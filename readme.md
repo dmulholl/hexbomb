@@ -1,6 +1,6 @@
 # Hexbomb
 
-A command line hexdump utility written in Rust.
+A command line hexdump utility.
 
 <p align="center">
     <img src="hexbomb.png" width="600px">
