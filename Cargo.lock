@@ -2,9 +2,9 @@
 # It is not intended for manual editing.
 [[package]]
 name = "arguably"
-version = "2.0.0-alpha.1"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0a4b155e3403c59a7aada390adf96a90e946db4898160c780eca4aa54095a6d"
+checksum = "be599bc701e6bc4b34e62ae0b69341870995814cc40bfcbb90d04b20ed887fc3"
 
 [[package]]
 name = "atty"
@@ -39,7 +39,7 @@ dependencies = [
 
 [[package]]
 name = "hexbomb"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "arguably",
  "colored",
