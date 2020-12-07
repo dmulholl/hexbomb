@@ -1,6 +1,6 @@
 # Hexbomb
 
-A command line hexdump utility.
+A hexdump utility with style.
 
 <p align="center">
     <img src="hexbomb.png" width="600px">
